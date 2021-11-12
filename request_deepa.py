@@ -1,62 +1,55 @@
 import json
 import requests
-result=requests.get("https://saral.navgurukul.org/api/courses")
-data=result.json()
-f=open("fileDeepa.json","w")
-data2=json.dump(data,f,indent=6)
-f.close()
-def navigation(temp,list,slug_user,data_new):
-    while True:
-        i=slug_user
-        navigatiion_user=int(input(" \n what navigation part you want ? \n for up : 1 \n for next : 2 \n for back : 3 \n  for quit: 0 \n   " ))
-        if navigatiion_user==1:
-            slug_api=requests.get(" http://saral.navgurukul.org/api/courses/"+str(temp)+"/exercise/getBySlug?slug="+str(list[i-2]))
-            cont=slug_api.json()
-            print(cont["content"])
-        elif navigatiion_user==2:
-            slug_api=requests.get(" http://saral.navgurukul.org/api/courses/"+str(temp)+"/exercise/getBySlug?slug="+str(list[i]))
-            cont=slug_api.json()
-            print(cont["content"])
-        elif navigatiion_user==3:
-            c2=1
-            for i3 in data_new["data"]:
-                print(c2,i3["name"])
-                c2+=1
-                c3=1
-                for i4 in i3["childExercises"]:
-                    print(c3,i4["name"])
-                    c3+=1
-        else:
+def courses():
+    a = requests.get("http://saral.navgurukul.org/api/courses")
+    a1 = a.text
+    print(a1)
+    print("------------------------")
+    with open("courses.json","w") as f:
+        python_dict=json.loads(a1)
+        json.dump(python_dict,f,indent=4)
+    with open("courses.json","r") as f:
+        data = json.load(f)
+    id_of_courses = [] 
+    i = 0
+    while i < len(data['availableCourses']):
+        print(i,".",data['availableCourses'][i]['name'],"---",data['availableCourses'][i]['id'])
+        id_of_courses.append(data['availableCourses'][i]['id'])
+        i+=1 
+    select_course = int(input("select the course u want by selecting cooresponding number:"))
+    excercises = requests.get("http://saral.navgurukul.org/api/courses/"+str(id_of_courses[select_course])+"/exercises")
+    a=excercises.json()
+    j=0
+    l=0
+    list_of_slug = []
+    while j<len(a["data"]):
+        print(l,":",a["data"][j]["name"])
+        list_of_slug.append(a['data'][j]["slug"])
+        l+=1
+        b=(a["data"][j]["childExercises"])
+        k=0
+        while k<len(b):
+            c=(b[k]["name"])
+            print("     ", l,"..",c)
+            list_of_slug.append(b[k]['slug'])
+            k+=1
+            l+=1
+        j+=1
+    slug_num = int(input("choose the corresp3onding slug number"))
+    slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num])
+    b=slug_list.json()
+    print("content:",b["content"]) 
+    next_step = input("coose your next step:")
+    i=0   
+    while i<len(list_of_slug):
+        if next_step == "up":
+            courses()
+        elif next_step == "prev":
+            slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num-1])
+            print("content:",b["content"]) 
+        elif next_step == "next":
+            slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num+1])
+            print("content:",b["content"]) 
+        elif next_step == "exit":
             break
-        
-
-def request():
-    c=1
-    for i in data["availableCourses"]:
-        print(c," ",i["name"],":_ ",i["id"])
-        c+=1
-    for i2 in data["availableCourses"]:
-        user=int(input(" enter couse id :   "))
-        temp=data["availableCourses"][user-1]["id"]
-        api=requests.get("http://saral.navgurukul.org/api/courses/"+str(temp)+"/exercises")
-        data_new=api.json()
-        # print(data_new)
-
-        list=[]
-        c2=1
-        for i3 in data_new["data"]:
-            print(c2,i3["name"])
-            list.append(i3["slug"])
-            c2+=1
-            c3=1
-            for i4 in i3["chixercildEses"]:
-                print(c3,i4["name"])
-                list.append(i4["slug"])
-                c3+=1
-        slug_user=int(input(" enter number for slug content :   "))
-        slug_api=requests.get(" http://saral.navgurukul.org/api/courses/"+str(temp)+"/exercise/getBySlug?slug="+str(list[slug_user-1]))
-        content=slug_api.json()
-        print(content['content'])
-        navigation(temp,list,slug_user,data_new)
-request()
-
+courses()
