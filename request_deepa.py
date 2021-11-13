@@ -20,36 +20,30 @@ def courses():
     excercises = requests.get("http://saral.navgurukul.org/api/courses/"+str(id_of_courses[select_course])+"/exercises")
     a=excercises.json()
     j=0
-    l=0
+    l=1
     list_of_slug = []
     while j<len(a["data"]):
         print(l,":",a["data"][j]["name"])
         list_of_slug.append(a['data'][j]["slug"])
         l+=1
-        b=(a["data"][j]["childExercises"])
-        k=0
-        while k<len(b):
-            c=(b[k]["name"])
-            print("     ", l,"..",c)
-            list_of_slug.append(b[k]['slug'])
-            k+=1
-            l+=1
         j+=1
     slug_num = int(input("choose the corresp3onding slug number"))
     slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num])
     b=slug_list.json()
     print("content:",b["content"]) 
-    next_step = input("coose your next step:")
+    next_step = input("coose your next step: \n back \n prev \n next \n exit \n :   ")
     i=0   
     while i<len(list_of_slug):
-        if next_step == "up":
+        if next_step == "back":
             courses()
         elif next_step == "prev":
             slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num-1])
             print("content:",b["content"]) 
+            break
         elif next_step == "next":
             slug_list = requests.get("http://saral.navgurukul.org/api/courses/"+ str(select_course )+"/exercise/getBySlug?slug=" + list_of_slug[slug_num+1])
             print("content:",b["content"]) 
+            break
         elif next_step == "exit":
             break
 courses()
